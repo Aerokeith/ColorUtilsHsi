@@ -15,7 +15,7 @@
     It also applies gamma correction using the same gamma value for all color components, to linearize the perceived increase in
     brightness as intensity (I) is increased linearly. Finally, it applies a per-color scale factor to compensate for 
     differences in perceived brightness among the LED colors. 
-    For convenience, the function call is overloaded to allow it to be called with the the gamma and scalFactors parameters
+    For convenience, the function call is overloaded to allow it to be called with the the gamma and scaleFactors parameters
     to be omitted, in which case the default values defined in colorUtilsHsi.h will be used. 
 */
 
@@ -229,12 +229,21 @@ hsiF BlendHsi(hsiF color1, hsiF color2, float scaleI2) {
 }
 
 
-/* InterpHsv() returns an HSI color interpolated between color1 and color2 based on the value of ctrl (between 0 and 1), using
-    the shortest possible hue distance (with wrapping if necessary)
+/* InterpHsi() returns an HSI color interpolated between color1 and color2 based on the value of ctrl (between 0 and 1), using
+    the shortest possible hue distance (with wrapping if necessary). If one of the colors is "off" (I=0), its hue and saturation 
+    are set to the same values as the other color. This results in interpolation based only on intensity (I). 
 */
 hsiF InterpHsi(hsiF color1, hsiF color2, float ctrl) {
   hsiF iColor;
 
+  if (color1.i == 0) {
+    color1.h = color2.h;
+    color1.s = color2.s;
+  }
+  else if (color2.i == 0) {
+    color2.h = color1.h;
+    color2.s = color1.s;
+  }
   iColor.h = WrapHue(color1.h + (HueDistance(color1.h, color2.h) * ctrl));
   iColor.s = color1.s + ((color2.s - color1.s) * ctrl);
   iColor.i = color1.i + ((color2.i - color1.i) * ctrl);
