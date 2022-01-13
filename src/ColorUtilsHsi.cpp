@@ -106,6 +106,7 @@ rgbF Hsi2Rgb(hsiF hsi, float gamma, rgbF scaleFactors) {
   hsi.h = constrain(hsi.h, 0, 1);   // ensure that all components of hsi are in range 0-1
   hsi.s = constrain(hsi.s, 0, 1);
   hsi.i = constrain(hsi.i, 0, 1);
+  hsi.i *= globalBrightness;  // scale by global brightness level
 
     // Step 1: Compute RGB assuming full intensity (I == 1)
   hAdj = hsi.h * 2 * PI;    // convert h to radians
