@@ -8,6 +8,7 @@
 #include <Arduino.h>
 #include "ColorUtilsHsi.h"
 
+float globalBrightness = 1.0;   // global brightness level, changed externally using SetGlobalBrightness()
 
 /* Hsi2Rgbw() implements the HSI to RGBW color space conversion algorithm defined in 
     https://blog.saikoled.com/post/44677718712/how-to-convert-from-hsi-to-rgb-white, with optimizations defined in
@@ -15,7 +16,7 @@
     It also applies gamma correction using the same gamma value for all color components, to linearize the perceived increase in
     brightness as intensity (I) is increased linearly. Finally, it applies a per-color scale factor to compensate for 
     differences in perceived brightness among the LED colors. 
-    For convenience, the function call is overloaded to allow it to be called with the the gamma and scalFactors parameters
+    For convenience, the function call is overloaded to allow it to be called with the the gamma and scaleFactors parameters
     to be omitted, in which case the default values defined in colorUtilsHsi.h will be used. 
 */
 
@@ -34,6 +35,7 @@ rgbwF Hsi2Rgbw(hsiF hsi, float gamma, rgbwF scaleFactors) {
   hsi.h = constrain(hsi.h, 0, 1);   // ensure that all components of hsi are in range 0-1
   hsi.s = constrain(hsi.s, 0, 1);
   hsi.i = constrain(hsi.i, 0, 1);
+  hsi.i *= globalBrightness;  // scale by global brightness level
 
     // Step 1: Compute RGB assuming full saturation (S == 1) and intensity (I == 1)
   hAdj = hsi.h * 2 * PI;    // convert h to radians
@@ -229,14 +231,33 @@ hsiF BlendHsi(hsiF color1, hsiF color2, float scaleI2) {
 }
 
 
-/* InterpHsv() returns an HSI color interpolated between color1 and color2 based on the value of ctrl (between 0 and 1), using
-    the shortest possible hue distance (with wrapping if necessary)
+/* InterpHsi() returns an HSI color interpolated between color1 and color2 based on the value of ctrl (between 0 and 1), using
+    the shortest possible hue distance (with wrapping if necessary). If one of the colors is "off" (I=0), its hue and saturation 
+    are set to the same values as the other color. This results in interpolation based only on intensity (I). 
 */
 hsiF InterpHsi(hsiF color1, hsiF color2, float ctrl) {
   hsiF iColor;
 
+  if (color1.i == 0) {
+    color1.h = color2.h;
+    color1.s = color2.s;
+  }
+  else if (color2.i == 0) {
+    color2.h = color1.h;
+    color2.s = color1.s;
+  }
   iColor.h = WrapHue(color1.h + (HueDistance(color1.h, color2.h) * ctrl));
   iColor.s = color1.s + ((color2.s - color1.s) * ctrl);
   iColor.i = color1.i + ((color2.i - color1.i) * ctrl);
   return (iColor);
+}
+
+
+void SetGlobalBrightness(float brightVal) {
+  globalBrightness = constrain(brightVal, 0, 1);
+}
+
+
+float GetGlobalBrightness() {
+  return globalBrightness;
 }
