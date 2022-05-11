@@ -182,16 +182,18 @@ rgbPwm Rgb2Pwm(rgbF in, uint32_t maxPwm) {
 */
 float HueDistance(float startH, float endH) {
   float nonWrapDist;
+  float nonWrapDistAbs;
 
   nonWrapDist = endH - startH;  // compute distance without wraparound
-  if (abs(nonWrapDist) <= 0.5) {  // non-wrapped distance is shortest
+  nonWrapDistAbs = abs(nonWrapDist);
+  if (nonWrapDistAbs <= 0.5) {  // non-wrapped distance is shortest
     return (nonWrapDist);
   }
   else if (endH >= startH) { // negative wrap is shortest
     return (nonWrapDist - 1);
   }
   else { // (endH < startH), so positive wrap is shortest
-    return (nonWrapDist - 1);
+    return (1 - nonWrapDistAbs);
   }
 }
 
@@ -221,8 +223,12 @@ hsiF BlendHsi(hsiF color1, hsiF color2, float scaleI2) {
   hsiF blendColor;
 
   color2.i *= scaleI2;  // scale up the brightness of color2
-  iRatio = color2.i / color1.i; // blends are based on ratio of scaled v2 to v1
-  blendRatio = iRatio / (1 + iRatio);  // convert ratio to value between 0 and 1
+  if (color1.i < 0.001) // if the color1.i is essentially 0
+    blendRatio = 1.0;   // then color1 has no influence at all (color2 dominates)
+  else {
+    iRatio = color2.i / color1.i; // blends are based on ratio of scaled v2 to v1
+    blendRatio = iRatio / (1 + iRatio);  // convert ratio to value between 0 and 1
+  }
   blendDist = HueDistance(color1.h, color2.h) * blendRatio; // use blendRatio to compute hue distance from color1 to blended color
   blendColor.h = WrapHue(color1.h + blendDist); // add blended distance and apply wrapping if necessary
   blendColor.i = min((color1.i + color2.i), 1.0);  // brightness "blend" is just a summation with range clipping
