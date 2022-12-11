@@ -176,25 +176,64 @@ rgbPwm Rgb2Pwm(rgbF in, uint32_t maxPwm) {
 
 
 
-/* HueDistance() is used by certain effects to compute the signed "distance" between two hue (H) values, given that Hue is a 
-    is a circular range that wraps around from the maximum value to 0. The distance returned is the minimum (absolute) value of the two
-    possible directions.
+/* HueDistance()
+    Computes the signed "distance" between two hue (H) values, given that Hue is a is a circular range that wraps around from the 
+    maximum value (1.0) to 0. 
+    Parameters: 
+      float startH: Baseline hue from which to compute the distance
+      float endH: Target hue to compute the distance of (from startH)
+      bool useShortestDist: If true, the distance returned will be the shortest distance (magnitude) comparing the positive and 
+        negative directions, including wrap-around. If negative, the positiveDir parameter determines the direction used to compute 
+        the distance
+      bool positiveDir: If true, the hue distance to endH will be computed in the positive direction from StartH
+    Returns: 
+      float: Signed distance from startH to endH, as influenced by the useShortestDist and positveDir flags
 */
-float HueDistance(float startH, float endH) {
-  float nonWrapDist;
-  float nonWrapDistAbs;
+float HueDistance(float startH, float endH, bool useShortestDist, bool positiveDir) {
+  float nonWrapDist;    // signed distance without wrapping
+  float nonWrapDistAbs; // magnitude of non-wrapped distance
+  bool ascending;       // true if endH is greater than startH
 
   nonWrapDist = endH - startH;  // compute distance without wraparound
-  nonWrapDistAbs = abs(nonWrapDist);
-  if (nonWrapDistAbs <= 0.5) {  // non-wrapped distance is shortest
-    return (nonWrapDist);
+  ascending = (endH >= startH); // determine order of start/end hues
+  nonWrapDistAbs = abs(nonWrapDist);  // compute magnitude of non-wrapped distance
+  if (useShortestDist) {
+    if (nonWrapDistAbs <= 0.5) {  // non-wrapped distance is shortest
+      return (nonWrapDist);
+    }
+    else if (ascending) { // wrapped distance in negative direction is shortest
+      return (nonWrapDist - 1);
+    }
+    else { // (!ascending), so positive wrap is shortest
+      return (1 - nonWrapDistAbs);
+    }
   }
-  else if (endH >= startH) { // negative wrap is shortest
-    return (nonWrapDist - 1);
+  else {   // don't use shortest distance
+    if (positiveDir) {  // compute distance only in positive direction (with wrapping if necessary)
+      if (ascending)    // if hues are ordered, no wrapping necessary
+        return (nonWrapDist);
+      else  // hues not ordered, must wrap
+        return (nonWrapDist + 1);
+    }
+    else { // compute distance only in negative direction (with wrapping if necessary)
+      if (ascending)  // hues are ordered, must wrap
+        return (nonWrapDist - 1);
+      else  // hues not ordered, no wrapping necessary
+        return (nonWrapDist);
+    }
   }
-  else { // (endH < startH), so positive wrap is shortest
-    return (1 - nonWrapDistAbs);
-  }
+}
+
+/* HueDistance()
+    Overload of HueDistance() above, omitting useShortestDist and positiveDir parameters for backward compatibility 
+    Parameters: 
+      float startH: Baseline hue from which to compute the distance
+      float endH: Target hue to compute the distance of (from startH)
+    Returns: 
+      float: Minimum-magntitude (shortest) signed distance from startH to endH
+*/
+float HueDistance(float startH, float endH) {
+  return HueDistance(startH, endH, true, false);
 }
 
 

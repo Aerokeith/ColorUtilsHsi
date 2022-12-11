@@ -61,6 +61,7 @@ rgbF Hsi2Rgb(hsiF hsi);
 rgbwPwm Rgbw2Pwm(rgbwF in, uint32_t maxPwm);
 rgbPwm Rgb2Pwm(rgbF in, uint32_t maxPwm);
 float HueDistance(float startH, float endH);
+float HueDistance(float startH, float endH, bool useShortestDist, bool positiveDir);
 float WrapHue(float h);
 hsiF BlendHsi(hsiF color1, hsiF color2, float scaleI2);
 hsiF InterpHsi(hsiF color1, hsiF color2, float ctrl);
