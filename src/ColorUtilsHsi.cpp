@@ -183,7 +183,7 @@ rgbPwm Rgb2Pwm(rgbF in, uint32_t maxPwm) {
       float startH: Baseline hue from which to compute the distance
       float endH: Target hue to compute the distance of (from startH)
       bool useShortestDist: If true, the distance returned will be the shortest distance (magnitude) comparing the positive and 
-        negative directions, including wrap-around. If negative, the positiveDir parameter determines the direction used to compute 
+        negative directions, including wrap-around. If false, the positiveDir parameter determines the direction used to compute 
         the distance
       bool positiveDir: If true, the hue distance to endH will be computed in the positive direction from StartH
     Returns: 
@@ -277,26 +277,45 @@ hsiF BlendHsi(hsiF color1, hsiF color2, float scaleI2) {
 }
 
 
-/* InterpHsi() returns an HSI color interpolated between color1 and color2 based on the value of ctrl (between 0 and 1), using
-    the shortest possible hue distance (with wrapping if necessary). If one of the colors is "off" (I=0), its hue and saturation 
-    are set to the same values as the other color. This results in interpolation based only on intensity (I). 
+/* InterpHsi() returns an HSI color interpolated between color1 and color2 based on the value of ctrl (between 0 and 1).
+    If one of the colors is "off" (I=0), its hue and saturation are set to the same values as the other color. This results in 
+    interpolation based only on intensity (I). 
+  Parameters:
+    hsiF color1: color to be returned when ctrl=0
+    hsiF color2: color to be returned when ctrl=1
+    float ctrl: determines degree of interpolation between color1 and color2 (range 0 - 1)
+    bool useShortest: determines the "direction" of interpolation in the circular hue space. When true, interpolation is performed
+      in the direction (opositive or negative) of shortest distance between color1.h and color2.h, with hue wrapping as needed.
+      When false, hue interpolation is always in the positive direction from color1.h to color2.h, with wrapping as needed. 
+  Returns:
+    hsiF: interpolated color, including hue, saturation, and intensity components
 */
-hsiF InterpHsi(hsiF color1, hsiF color2, float ctrl) {
-  hsiF iColor;
+hsiF InterpHsi(hsiF color1, hsiF color2, float ctrl, bool useShortest) {
+  hsiF iColor;  // return value
 
-  if (color1.i == 0) {
+  if (color1.i == 0) {    // color1 is "off", so interpolate only in intensity
     color1.h = color2.h;
     color1.s = color2.s;
   }
-  else if (color2.i == 0) {
+  else if (color2.i == 0) {   // color2 is "off", so interpolate only in intensity
     color2.h = color1.h;
     color2.s = color1.s;
   }
-  iColor.h = WrapHue(color1.h + (HueDistance(color1.h, color2.h) * ctrl));
-  iColor.s = color1.s + ((color2.s - color1.s) * ctrl);
+    // hue interpolation based on wrapped hue distance in specified direction
+  iColor.h = WrapHue(color1.h + (HueDistance(color1.h, color2.h, useShortest, true) * ctrl));
+  iColor.s = color1.s + ((color2.s - color1.s) * ctrl); // normal interpolation for saturation and intensity
   iColor.i = color1.i + ((color2.i - color1.i) * ctrl);
   return (iColor);
 }
+
+
+/* Overload of InterpHsi(), for backward compatibility, always using shortest hue distance 
+*/
+hsiF InterpHsi(hsiF color1, hsiF color2, float ctrl) {
+  return (InterpHsi(color1, color2, ctrl, true));
+}
+
+
 
 
 void SetGlobalBrightness(float brightVal) {

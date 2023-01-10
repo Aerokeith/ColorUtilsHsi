@@ -65,5 +65,6 @@ float HueDistance(float startH, float endH, bool useShortestDist, bool positiveD
 float WrapHue(float h);
 hsiF BlendHsi(hsiF color1, hsiF color2, float scaleI2);
 hsiF InterpHsi(hsiF color1, hsiF color2, float ctrl);
+hsiF InterpHsi(hsiF color1, hsiF color2, float ctrl, bool useShortest);
 void SetGlobalBrightness(float brightVal);
 float GetGlobalBrightness();
