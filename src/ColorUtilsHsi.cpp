@@ -195,6 +195,8 @@ float HueDistance(float startH, float endH, bool useShortestDist, bool positiveD
   bool ascending;       // true if endH is greater than startH
 
   nonWrapDist = endH - startH;  // compute distance without wraparound
+  if (nonWrapDist == 0)         // if start and end hues are the same
+    return (0);                 // then HueDistance is zero
   ascending = (endH >= startH); // determine order of start/end hues
   nonWrapDistAbs = abs(nonWrapDist);  // compute magnitude of non-wrapped distance
   if (useShortestDist) {
