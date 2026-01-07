@@ -24,6 +24,10 @@ rgbwF Hsi2Rgbw(hsiF hsi) {
   return (Hsi2Rgbw(hsi, DEFAULT_GAMMA, DEFAULT_RGBW_SCALE_FACTORS));
 }
 
+rgbwF Hsi2Rgbw(hsiF hsi, float gamma) {
+  return (Hsi2Rgbw(hsi, gamma, DEFAULT_RGBW_SCALE_FACTORS));
+}
+
 rgbwF Hsi2Rgbw(hsiF hsi, float gamma, rgbwF scaleFactors) {
   const float rad60 = 1.0472;     // 60 degrees in radians
   const float rad120 = 2.0944;    // 120 degrees in radians
@@ -94,6 +98,10 @@ rgbwF Hsi2Rgbw(hsiF hsi, float gamma, rgbwF scaleFactors) {
 
 rgbF Hsi2Rgb(hsiF hsi) {
   return (Hsi2Rgb(hsi, DEFAULT_GAMMA, DEFAULT_RGB_SCALE_FACTORS));
+}
+
+rgbF Hsi2Rgb(hsiF hsi, float gamma) {
+  return (Hsi2Rgb(hsi, gamma, DEFAULT_RGB_SCALE_FACTORS));
 }
 
 rgbF Hsi2Rgb(hsiF hsi, float gamma, rgbF scaleFactors) {

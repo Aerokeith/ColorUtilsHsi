@@ -55,8 +55,10 @@ struct rgbPwm {
 #endif // _COLOR_TYPES
 
 rgbwF Hsi2Rgbw(hsiF hsi, float gamma, rgbwF scaleFactors);
+rgbwF Hsi2Rgbw(hsiF hsi, float gamma);
 rgbwF Hsi2Rgbw(hsiF hsi);
 rgbF Hsi2Rgb(hsiF hsi, float gamma, rgbF scaleFactors);
+rgbF Hsi2Rgb(hsiF hsi, float gamma);
 rgbF Hsi2Rgb(hsiF hsi);
 rgbwPwm Rgbw2Pwm(rgbwF in, uint32_t maxPwm);
 rgbPwm Rgb2Pwm(rgbF in, uint32_t maxPwm);
